@@ -23,15 +23,12 @@ class hit_record{
         float t;  
         vec3 p;
         vec3 normal; 
-        material *mat_ptr;
-        /*material *mat;
+        material mat;
         hit_record(){
         }
         vec3 getColor(){
-            material res = *mat;
-            return res.color;
+            return mat.color;
         }
-        */
 };
 
 class hitable  {

@@ -38,7 +38,7 @@ float isSphere(vec3& center, float raio, ray& r){
 vec3 getColor(ray& r, camera& cam, light& font){
     hit_record result;
     if(world->hit(r, 0.0, MAXFLOAT, result)){
-        return 0.5*vec3(result.normal.x()+1, result.normal.y()+1, result.normal.z()+1);
+        return result.mat.color;
     }
     vec3 unitario = unit_vector(r.direction());
     float t=0.5*(unitario.y()+1.0);
@@ -55,7 +55,7 @@ int main() {
     hitable *list[2];
     list[0] = new sphere(vec3(0,0,-1),0.5, new material(vec3(1.0, 0.0, 0.0),  0, 0, 0, 0));
     list[1] = new sphere(vec3(0,-100.5,-1),100, new material(vec3(1.0, 1.0, 0.0),  0, 0, 0, 0));
-    list[2] = new sphere(vec3(1,0,-1),0.5, new material(vec3(1.0, 0.0, 1.0),  0, 0, 0, 0));
+    list[2] = new sphere(vec3(1,0,-1),0.5, new material(vec3(1.0, 1.0, 1.0),  0, 0, 0, 0));
     world = new hitable_list(list, 3);
     light ligthcenter(vec3(1.0,1.0,1.0), vec3(2.0,100.0,-1.0));
     //(vec3 lookfrom, vec3 lookat, vec3 vup, float vfov, float aspect
