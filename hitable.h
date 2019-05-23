@@ -12,18 +12,26 @@
 #ifndef HITABLEH
 #define HITABLEH 
 #include <stdlib.h>
+#include <iostream>
 #include "ray.h"
+#include "material.h"
 
-class material;
+using namespace std;
 
-
-
-struct hit_record
-{
-    float t;  
-    vec3 p;
-    vec3 normal; 
-    material *mat_ptr;
+class hit_record{
+    public:
+        float t;  
+        vec3 p;
+        vec3 normal; 
+        material *mat_ptr;
+        /*material *mat;
+        hit_record(){
+        }
+        vec3 getColor(){
+            material res = *mat;
+            return res.color;
+        }
+        */
 };
 
 class hitable  {
