@@ -33,7 +33,7 @@ vec3 random_in_unit_disk() {
 
 class camera {
     public:
-        camera(vec3 lookfrom, vec3 lookat, vec3 vup, float vfov, float aspect) { // vfov is top to bottom in degrees
+        camera(vec3 lookfrom, vec3 lookat, vec3 vup, float vfov, float aspect, float dist) { // vfov is top to bottom in degrees
             vec3 u, v, w;
             float theta = vfov*PI/180;
             float half_height = tan(theta/2);
@@ -43,9 +43,9 @@ class camera {
             u = unit_vector(cross(vup, w));
             v = cross(w, u);
             lower_left_corner = vec3(- half_height, -half_height, -1.0);
-            lower_left_corner = origin  - half_width*u -half_height*v - w;
-            horizontal = 2*half_width*u;
-            vertical = 2*half_height*v;
+            lower_left_corner = origin  - half_width*dist*u -half_height*dist*v - w;
+            horizontal = 2*dist*half_width*u;
+            vertical = 2*dist*half_height*v;
         }
         ray get_ray(float s, float t) {
             return ray(origin, lower_left_corner + s*horizontal + t*vertical - origin); 
