@@ -17,7 +17,6 @@
 #include <iostream>
 
 class vec3  {
-
     
 public:
     vec3() {}
@@ -151,6 +150,13 @@ inline vec3& vec3::operator/=(const float t) {
 
 inline vec3 unit_vector(vec3 v) {
     return v / v.length();
+}
+
+inline float getDistance(const vec3 &v1, const vec3 &v2){
+        float dx = v2.x() - v1.x();
+        float dy = v2.y() - v1.y();
+        float dz = v2.z() - v1.z(); 
+        return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 #endif
