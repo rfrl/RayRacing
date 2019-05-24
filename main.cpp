@@ -14,7 +14,7 @@
 #include <fstream>
 
 using namespace std;
-const float MAXFLOAT = FLT_MAX;
+
 //hitable *world;
 
 float max(float a, float b){
@@ -46,15 +46,15 @@ vec3 phong(hit_record& result, const camera &cam, light font){
             dif = result.mat->kd * result.mat->color * font.cor * cos;
             specular = result.mat->ks * result.mat->color * font.cor * pow(max(0.0, dot(direct, reflection)), 128.0);
         }
-        vec3 cor = (dif + specular + base);
+        vec3 cor = (dif + specular + base)*result.mat->alpha;
         return cor;
 }
 
 vec3 getColor(ray &r, camera& cam, light& font, const hitable *world){
     hit_record result;
-    if(world->hit(r, 0.0000001, MAXFLOAT, result)){
+    if(world->hit(r, 0.0000001, numeric_limits<float>::max(), result)){
         hit_record rec;
-        if(world->hit(ray(result.p, font.pos-result.p), 0.001,FLT_MAX, rec)) {//Checa se existe um caminho livre até a luz
+        if(world->hit(ray(result.p, font.pos-result.p), 0.001,FLT_MAX, rec)) {//Checa se existe um caminho livre atÃ© a luz
             return vec3(0.0,0.0,0.0);
         }
         return phong(result, cam, font);
@@ -74,14 +74,14 @@ int main() {
     hitable *list[3];
     float raio = cos(PI/4.0);
     //vec3 color, float kd, float ks, float ke, float alpha
-    list[0] = new sphere(vec3(-raio,1,-1),raio, new material(vec3(1.0, 0.0, 0.0), 0.7, 1.0, 0.6, 1.0));
-    list[1] = new sphere(vec3(raio,-100.5,-1.0),100, new material(vec3(1.0, 1.0, 0.1),  0.7, 0, 1.0, 1.0));
-    list[2] = new sphere(vec3(raio,1.0, -1.0 ),raio, new material(vec3(0.2, 0.5, 1.0),  0.7, 0.5, 0.6, 1.0));
+    list[0] = new sphere(vec3(-raio,1,-1),raio, new material(vec3(1.0, 0.3, 0.8), 1.0, 1.0, 1.0, 1.0));
+    list[1] = new sphere(vec3(raio,-100.5,-1.0),100, new material(vec3(0.4, 1.0, 0.1),  0.7, 0, 1.0, 1.0));
+    list[2] = new sphere(vec3(raio,1.0, -1.0 ),raio, new material(vec3(0.2, 0.5, 1.0),  1.0, 1.0, 1.0, 1.0));
     hitable *world = new hitable_list(list, 3);
-    light ligthcenter(vec3(1.0, 1.0, 1.0), vec3(5.0, 1000.0, 701.0));
+    light ligthcenter(vec3(1.0, 1.0, 1.0), vec3(-5.0, 1000.0, 701.0));
     //(vec3 lookfrom, vec3 lookat, vec3 vup, float vfov, float aspect
-    vec3 lookfrom  = vec3(raio+5, 5, 4), lookat = vec3(raio,0,-1);
-    camera cam(lookfrom, lookat, vec3(0,1,0), 30, float(x)/float(y), 1.0);//Pos de origem, Ponto de mira, vetor perpendicular, Abertura de lente(FOV) e Aspect
+    vec3 lookfrom  = vec3(raio+5, 3, 4), lookat = vec3(raio,0,-1);
+    camera cam(lookfrom, lookat, vec3(0,1,0), 30, float(x)/float(y), 0.2 , (lookfrom-lookat).length());//Pos de origem, Ponto de mira, vetor perpendicular, (FOV) , Aspect, Abertura de lente e Distancia da lente
     for(float i=y-1; i>=0; i--){
         for(float j=0.0; j<x; j++){
             vec3 col(0.0,0.0,0.0);
@@ -92,7 +92,7 @@ int main() {
                 col += getColor(r, cam, ligthcenter, world);
             }
             col /= float(ns);
-            col = vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
+            //col = vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
             int rn = 255.99*col[0];
             int gn = 255.99*col[1];
             int bn = 255.99*col[2];
