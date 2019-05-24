@@ -22,49 +22,6 @@ class sphere: public hitable  {
         vec3 center;
         float radius;
         material mat_ptr;
-
-
-    bool intersect(float max, hit_record &rec, ray *r) {
-        vec3 distance = r->origin()- this->center;
-        float a = dot(r->direction(), r->direction());
-        float b = 2 * dot(distance, r->direction());
-        float c = dot(distance, distance) - (this->radius * this->radius);
-        float delta = b * b - 4 * a * c;
-        if (delta > 0) {
-            float temp = (-1 * b - sqrt(delta) ) / (2.0 * a);
-            if(temp > 0.1 && temp < max){
-                temp += 0.000000001;
-                rec.t = temp;
-                rec.p = r->point_at_parameter(temp);
-                vec3  op = rec.p-(this->center);
-                op.make_unit_vector();
-                rec.normal = op;
-                return true;
-            }
-            temp = (-1 * b + sqrt(delta) ) / (2.0 * a);
-            if(temp > 0.1 && temp < max){
-                temp += 0.000000001;
-                rec.t = temp;
-                rec.p = r->point_at_parameter(temp);
-                vec3  op = rec.p-(this->center);
-                op.make_unit_vector();
-                rec.normal = op;
-                return true;
-            }
-        } else if ( delta == 0) {
-            float temp = -1 * b / 2 * a;
-            if( temp > 0 && temp < max){
-            temp = temp + 0.00000000001;
-            rec.t = temp;
-            rec.p = r->point_at_parameter(temp);
-            vec3  op = rec.p-(this->center);
-            op.make_unit_vector();
-            rec.normal = op;
-            return true;
-            }
-        }
-        return false;
-}
 };
 
 bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const {
