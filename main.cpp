@@ -36,12 +36,8 @@ bool isShadow(ray *r,  light font){
 }
 */
 
-vec3 reflection(vec3 a, vec3 b){
-    float d = dot(a, b);
-    d = d*2;
-    b = b*d;
-    a = a-b;
-    return a;
+vec3 reflect(const vec3 &v, const vec3 &n) {
+    return 2*dot(v,n)*n - v;
 }
 
 vec3 difuse(light font, hit_record& gets){
@@ -82,18 +78,28 @@ vec3 spec(light font, hit_record &rec, ray &r, camera cam){
     return vec3(0.0,0.0,0.0);
 }
 
-vec3 phong(hit_record& result, const camera &cam, light font, ray *r){
+vec3 phong(hit_record& result, const camera &cam, light font){
     //cout<<"COR: "<<acertos.getColor().x()<<" "<<acertos.getColor().y()<<" "<<acertos.getColor().x()<<endl;
-        vec3 perc = difuse(font, result);
-        vec3 dif = perc*result.mat.kd;
+        vec3 lig = font.pos - result.p;
+        vec3 direct = cam.origin- result.p;
+        vec3 normal = result.normal;
 
-        vec3 base = result.mat.color*result.mat.ke;
+        direct.make_unit_vector();
+        normal.make_unit_vector();
+        lig.make_unit_vector();
         
-        vec3 specular = spec(font, result, (*r), cam);
-        specular = specular*result.mat.ks;
+        float cos = max(0.0f, dot(normal, lig));
+
+        vec3 base = result.mat.color*result.mat.ke*font.cor;
+        vec3 dif = vec3(0,0,0);
+        vec3 specular = vec3(0,0,0);
+        vec3 reflection = reflect(lig, normal);
         
-        
-        vec3 cor = result.mat.alpha*(dif + base + specular);
+        if(cos>0.0){
+            dif = result.mat.kd * result.mat.color * font.cor * cos;
+            specular = result.mat.ks * result.mat.color * font.cor * pow(max(0.0f, dot(direct, reflection)), 128.0);
+        }
+        vec3 cor = (dif + specular + base);
         return cor;
 }
 
@@ -104,29 +110,30 @@ vec3 getColor(ray *r, camera& cam, light& font){
         if(world->hit(ray(result.p, font.pos-result.p), 0.001,FLT_MAX, rec)) {//Checa se existe um caminho livre até a luz
             return vec3(0.0,0.0,0.0);
         }
-        return phong(result, cam, font, r);
+        return phong(result, cam, font);
     }
     vec3 unitario = unit_vector(r->direction());
     float t=0.5*(unitario.y()+1.0);
-    return (1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.2, 0.3, 0.2);
+    return (1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.0, 0.3, 1.0);
 }
 
 int main() {
     int x = 1920;
     int y = 1080;
-    int ns = 10;
+    int ns = 1;
     ofstream out("out.ppm");
     //vec3 lf(-2.0, -1.0, -1.0), origin(0,0,0), horizontal(4.0, 0.0, 0.0), vertical(0,2,0);
     out<<"P3"<<endl<<x<<" "<<y<<endl<<255<<endl;
     sphere *list[2];
+    float raio = cos(PI/4.0);
     //float kd, float ks, float ke, float alpha
-    list[0] = new sphere(vec3(4.0,1.0,-1),0.5, new material(vec3(1.0, 0.0, 0.0), 1, 1, 1, 1.0));
-    list[1] = new sphere(vec3(0,-1000,-1),1000, new material(vec3(1.0, 1.0, 0.1),  0, 0, 1, 1));
-    list[2] = new sphere(vec3(1.0,1.0,-1),0.7, new material(vec3(0.2, 0.5, 1.0),  1, 1, 1, 1.0));
+    list[0] = new sphere(vec3(-raio+2,0.6,-1),raio, new material(vec3(1.0, 0.0, 0.0), 0.2, 0.5, 0.6, 0.4));
+    list[1] = new sphere(vec3(0,-100.5,-1),100, new material(vec3(1.0, 1.0, 0.1),  0.2, 0.5, 0.6, 1.0));
+    list[2] = new sphere(vec3(raio,1.0, -2.0 ),raio, new material(vec3(0.2, 0.5, 1.0),  0.2, 0.5, 0.6, 1.0));
     world = new hitable_list(list, 3);
-    light ligthcenter(vec3(1.0,1.0,1.0), vec3(6.0,1000.0,-1.0));
+    light ligthcenter(vec3(1.0,1.0,1.0), vec3(raio, 6, 4));
     //(vec3 lookfrom, vec3 lookat, vec3 vup, float vfov, float aspect
-    camera cam(vec3(-1,2,1), vec3(0,1,-1), vec3(0,1,0), 90, float(x)/float(y), 1.2);//Pos de origem, Ponto de mira, vetor perpendicular, Abertura de lente(FOV) e Aspect
+    camera cam(vec3(raio+5, 2, 4), vec3(raio,0,-1), vec3(0,1,0), 30, float(x)/float(y), 1.0);//Pos de origem, Ponto de mira, vetor perpendicular, Abertura de lente(FOV) e Aspect
     for(float i=y-1; i>=0; i--){
         for(float j=0.0; j<x; j++){
             vec3 col(0.0,0.0,0.0);
